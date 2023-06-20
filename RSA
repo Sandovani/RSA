@@ -1,0 +1,69 @@
+import random
+
+def generate_prime_number(min_value, max_value):
+    """Generate a prime number within the given range."""
+    while True:
+        prime_candidate = random.randint(min_value, max_value)
+        if is_prime(prime_candidate):
+            return prime_candidate
+
+def is_prime(number):
+    """Check if a number is prime."""
+    if number < 2:
+        return False
+    for i in range(2, int(number**0.5) + 1):
+        if number % i == 0:
+            return False
+    return True
+
+def gcd(a, b):
+    """Calculate the greatest common divisor of two numbers."""
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+def generate_keypair(p, q):
+    """Generate public and private keys using two prime numbers."""
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    # Choose e (public key exponent)
+    e = random.randint(2, phi)
+    while gcd(e, phi) != 1:
+        e = random.randint(2, phi)
+
+    # Calculate d (private key exponent)
+    d = multiplicative_inverse(e, phi)
+
+    return (e, n), (d, n)
+
+def multiplicative_inverse(a, b):
+    """Calculate the multiplicative inverse of a modulo b."""
+    if b == 0:
+        return 1, 0
+    x, y = multiplicative_inverse(b, a % b)
+    return y, x - (a // b) * y
+
+def encrypt(message, public_key):
+    """Encrypt the message using the public key."""
+    e, n = public_key
+    return [pow(ord(char), e, n) for char in message]
+
+def decrypt(ciphertext, private_key):
+    """Decrypt the ciphertext using the private key."""
+    d, n = private_key
+    return ''.join([chr(pow(char, d, n)) for char in ciphertext])
+
+# Example usage
+p = generate_prime_number(100, 1000)
+q = generate_prime_number(100, 1000)
+
+public_key, private_key = generate_keypair(p, q)
+
+message = "Hello, world!"
+encrypted_message = encrypt(message, public_key)
+decrypted_message = decrypt(encrypted_message, private_key)
+
+print("Original message:", message)
+print("Encrypted message:", encrypted_message)
+print("Decrypted message:", decrypted_message)
